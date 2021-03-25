@@ -1,0 +1,35 @@
+basePath: /api
+info:
+  contact:
+    email: justin.kromlinger@stud.htwk-leipzig.de
+    name: Justin Kromlinger
+    url: https://hashworks.net
+  description: Continuous Integration Controller for the Arch Linux User Repository
+  license:
+    name: GNU General Public License v3
+    url: https://www.gnu.org/licenses/gpl-3.0
+  title: AUR CI Controller
+  version: "1.0"
+paths:
+  /v1/reportPackageModification:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: List of package names, max 250
+        in: body
+        name: names
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: ""
+      summary: Report packages as modified
+      tags:
+      - V1
+swagger: "2.0"

@@ -1,0 +1,53 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Continuous Integration Controller for the Arch Linux User Repository",
+        "title": "AUR CI Controller",
+        "contact": {
+            "name": "Justin Kromlinger",
+            "url": "https://hashworks.net",
+            "email": "justin.kromlinger@stud.htwk-leipzig.de"
+        },
+        "license": {
+            "name": "GNU General Public License v3",
+            "url": "https://www.gnu.org/licenses/gpl-3.0"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/v1/reportPackageModification": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "V1"
+                ],
+                "summary": "Report packages as modified",
+                "parameters": [
+                    {
+                        "description": "List of package names, max 250",
+                        "name": "names",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    }
+}
