@@ -3,12 +3,15 @@ import requests
 import sys
 import os
 import csv
+import logging
 from bs4.builder._htmlparser import HTMLParseError
 from bs4 import BeautifulSoup
 
 reportEndpoint = 'http://127.0.0.1:8080/api/v1/reportPackageModification'
 updatesCSVFilePath = 'updates.csv'
 perPage = 250
+
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 try:
     response = requests.get(
@@ -45,7 +48,7 @@ try:
         packages.append(package)
 
     if packages:
-        print('%d new modification(s) found, reporting to controller and appending to CSV.' % len(packages))
+        logging.info('%d new modification(s) found, reporting to controller and appending to CSV.' % len(packages))
 
         response = requests.post(reportEndpoint,
                                  json=[package[0] for package in packages],
@@ -57,7 +60,7 @@ try:
                 for package in reversed(packages):
                     w.writerow(package)
         else:
-            print('Report failed (error code %d)' % response.status_code)
+            logging.error('Report failed (error code %d)' % response.status_code)
             # TODO: How would we handle an error here? Temporary errors can be ignored, permanent errors
             # would lead to no new packages until it moves to the next page (resulting in 250 packages at once)
 
