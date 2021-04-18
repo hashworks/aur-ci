@@ -20,13 +20,13 @@ const (
 
 type Build struct {
 	Id                int64
+	PackageBase       string
 	PackageBaseId     int64
 	CommitId          int64
 	WorkerId          int64
 	Status            BuildStatus
 	Type              BuildType
 	DependsOnBuildIds []int64
-	LogPath           string
 	CreatedAt         time.Time `xorm:"created"`
 	StartedAt         time.Time
 	FinishedAt        time.Time

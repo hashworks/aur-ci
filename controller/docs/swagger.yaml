@@ -1,4 +1,41 @@
 basePath: /api
+definitions:
+  model.Work:
+    properties:
+      buildId:
+        type: integer
+      dependencies:
+        items:
+          type: string
+        type: array
+      packageBase:
+        type: string
+      packageBaseDataBase64:
+        type: string
+    type: object
+  model.WorkResult:
+    properties:
+      buildId:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: integer
+      makepkgBuildExitCode:
+        type: integer
+      makepkgBuildLogBase64:
+        type: string
+      makepkgExtractExitCode:
+        type: integer
+      makepkgExtractLogBase64:
+        type: string
+      pacmanExitCode:
+        type: integer
+      pacmanLogBase64:
+        type: string
+      status:
+        type: integer
+    type: object
 info:
   contact:
     email: justin.kromlinger@stud.htwk-leipzig.de
@@ -30,6 +67,71 @@ paths:
         "400":
           description: ""
       summary: Report packages as modified
+      tags:
+      - V1
+  /v1/worker/heartbeat/{hostname}:
+    post:
+      parameters:
+      - description: Hostname
+        in: path
+        name: hostname
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: ""
+      summary: Receives a heartbeat from a worker. Can also be used to register a
+        new worker.
+      tags:
+      - V1
+  /v1/worker/reportWorkResult:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: The result of the work
+        in: body
+        name: result
+        required: true
+        schema:
+          $ref: '#/definitions/model.WorkResult'
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: ""
+        "404":
+          description: Not Found
+          schema:
+            type: Worker
+      summary: Endpoint for workers to report work results.
+      tags:
+      - V1
+  /v1/worker/requestWork:
+    get:
+      parameters:
+      - description: Work amount to request, default 1
+        in: query
+        name: amount
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Work'
+            type: array
+        "400":
+          description: ""
+        "404":
+          description: Not Found
+          schema:
+            type: Worker
+      summary: Endpoint for workers to request work.
       tags:
       - V1
 swagger: "2.0"

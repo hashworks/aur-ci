@@ -10,6 +10,7 @@ type WorkerType int8
 type WorkerStatus int8
 
 const (
+	WORKER_TYPE_OTHER   WorkerType = 0
 	WORKER_TYPE_HETZNER WorkerType = 10
 )
 
@@ -25,8 +26,8 @@ type Worker struct {
 	Status    WorkerStatus
 	HetznerId int
 	Name      string
-	IPv4      string
-	IPv6      string
+	IPv4      string    `xorm:"'ipv4'"`
+	IPv6      string    `xorm:"'ipv6'"`
 	CreatedAt time.Time `xorm:"created"`
 	UpdatedAt time.Time `xorm:"updated"`
 }

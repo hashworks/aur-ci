@@ -11,14 +11,9 @@ import (
 	"github.com/go-git/go-git/v5/storage"
 	"github.com/hashworks/aur-ci/controller/aur"
 	"github.com/hashworks/aur-ci/controller/model"
-	"xorm.io/xorm"
 
 	"github.com/gin-gonic/gin"
 )
-
-func (s *Server) getLastCommitOfPackageBaseId(packageBaseId int64) *xorm.Session {
-	return s.DB.Table("commit").Where("package_base_id = ?", packageBaseId).Desc("committer_when")
-}
 
 // @Summary Report packages as modified
 // @Success 204
@@ -35,7 +30,7 @@ func (s *Server) apiV1ReportPackageModification(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	// In theory the RPC endpoint can handle more than 250 packages at once,
+	// In theory the RPC endpoint can handle more than 250 packages at once (5000 by default),
 	// but we don't really need it and can limit abuse a bit.
 	if len(packageNames) == 0 || len(packageNames) > 250 {
 		c.AbortWithError(http.StatusBadRequest, errors.New("Packagenames outside of range {1,250}"))
@@ -123,11 +118,12 @@ PACKAGES:
 				return
 			}
 
-			// Get list of all make_depends (by getting all packages of a packageBaseId)
-			// Filter make_depends by AUR packages
-			// Get last commit for every make_depends
-			// Add build task for last_commit
-			// Get list of build task ids for make_depends
+			// TODO: Depends list! This can be recursive, move to function
+			// Get list of all depends and make_depends (by getting all packages of a packageBaseId)
+			// Filter depends/make_depends by AUR packages
+			// Get last commit for every depends/make_depends
+			// Add build task for last_commit if it doesn't exist already
+			// Save list of build task ids
 
 			var lastCommitId int64
 			_, err = s.getLastCommitOfPackageBaseId(packageBaseId).Cols("id").Get(&lastCommitId)
@@ -138,6 +134,7 @@ PACKAGES:
 			}
 
 			_, err = s.DB.Insert(model.Build{
+				PackageBase:   packageBase,
 				PackageBaseId: packageBaseId,
 				CommitId:      lastCommitId,
 				Status:        model.STATUS_PENDING,

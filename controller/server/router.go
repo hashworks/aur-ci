@@ -16,6 +16,7 @@ type Server struct {
 	DB                *xorm.Engine
 	HetznerClient     *hcloud.Client
 	HetznerSSHKeyName *string
+	ExternalURI       *string
 	GitStoragePath    *string
 	cacheStore        *persistence.InMemoryStore
 }
@@ -44,6 +45,11 @@ func (s *Server) NewRouter() *gin.Engine {
 
 	apiV1 := api.Group("/v1")
 	apiV1.POST("/reportPackageModification", s.apiV1ReportPackageModification)
+
+	workerV1 := apiV1.Group("/worker")
+	workerV1.POST("/heartbeat/:hostname", s.apiV1WorkerHeartbeat)
+	workerV1.GET("/requestWork", s.apiV1WorkerRequestWork)
+	workerV1.PUT("/reportWorkResult", s.apiV1WorkerReportWorkResult)
 
 	return router
 }

@@ -64,6 +64,163 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1/worker/heartbeat/{hostname}": {
+            "post": {
+                "tags": [
+                    "V1"
+                ],
+                "summary": "Receives a heartbeat from a worker. Can also be used to register a new worker.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostname",
+                        "name": "hostname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/worker/reportWorkResult": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "V1"
+                ],
+                "summary": "Endpoint for workers to report work results.",
+                "parameters": [
+                    {
+                        "description": "The result of the work",
+                        "name": "result",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.WorkResult"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": ""
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "Worker"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/worker/requestWork": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "V1"
+                ],
+                "summary": "Endpoint for workers to request work.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Work amount to request, default 1",
+                        "name": "amount",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Work"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": ""
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "Worker"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.Work": {
+            "type": "object",
+            "properties": {
+                "buildId": {
+                    "type": "integer"
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "packageBase": {
+                    "type": "string"
+                },
+                "packageBaseDataBase64": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.WorkResult": {
+            "type": "object",
+            "properties": {
+                "buildId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "makepkgBuildExitCode": {
+                    "type": "integer"
+                },
+                "makepkgBuildLogBase64": {
+                    "type": "string"
+                },
+                "makepkgExtractExitCode": {
+                    "type": "integer"
+                },
+                "makepkgExtractLogBase64": {
+                    "type": "string"
+                },
+                "pacmanExitCode": {
+                    "type": "integer"
+                },
+                "pacmanLogBase64": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
         }
     }
 }`

@@ -1,61 +1,45 @@
 package aur
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"bufio"
+	"net/http"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/hashworks/aur-ci/controller/model"
+	rpc "github.com/mikkeloscar/aur"
 )
 
-func CloneOrFetchRepository(gitStoragePath *string, packageBase string) (*git.Repository, error) {
-	repositoryPath := filepath.Join(*gitStoragePath, packageBase+".git")
+func GetPackageInfos(packageNames []string) ([]model.Package, error) {
+	var packages []model.Package
 
-	_, err := os.Stat(repositoryPath)
-
-	var repository *git.Repository
-
-	if os.IsNotExist(err) {
-		repository, err = git.PlainClone(repositoryPath, true, &git.CloneOptions{
-			URL:      fmt.Sprintf("https://aur.archlinux.org/%s.git", packageBase),
-			Progress: nil,
-		})
-		if err != nil {
-			return repository, err
-		}
-	} else {
-		repository, err = git.PlainOpen(repositoryPath)
-		if err != nil {
-			return repository, err
-		}
-		err = repository.Fetch(&git.FetchOptions{
-			Progress: nil,
-		})
-		if err != nil && err != git.NoErrAlreadyUpToDate {
-			return repository, err
-		}
+	rpcPackages, err := rpc.Info(packageNames)
+	if err != nil {
+		return packages, err
 	}
 
-	return repository, nil
+	for _, rpcPackage := range rpcPackages {
+		packages = append(packages, model.NewPackageFromRPCPackage(rpcPackage))
+	}
+
+	return packages, nil
 }
 
-func GetCommitsUntilHash(repository *git.Repository, packageBaseId int64, hash string) ([]model.Commit, error) {
-	var commits []model.Commit
-	commitIter, err := repository.Log(&git.LogOptions{})
+func GetPackageBases() ([]string, error) {
+	resp, err := http.Get("https://aur.archlinux.org/pkgbase.gz")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-	if err == nil {
-		commitIter.ForEach(func(c *object.Commit) error {
-			if c.Hash.String() != hash {
-				commits = append(commits, model.NewCommitFromGitCommit(packageBaseId, c))
-				return nil
-			} else {
-				return storer.ErrStop
-			}
-		})
+	scanner := bufio.NewScanner(resp.Body)
+	pkgbases := []string{}
+	first := true
+	for scanner.Scan() {
+		if first {
+			first = false
+			continue
+		}
+		pkgbases = append(pkgbases, scanner.Text())
 	}
 
-	return commits, err
+	return pkgbases, nil
 }
